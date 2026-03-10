@@ -90,10 +90,13 @@ def segment_with_sam2(
     if not os.path.exists(resource_path):
         raise FileNotFoundError(f"Resource not found: {resource_path}")
 
+    _assets_dir = os.path.join(os.getcwd(), "assets")
+    _masks_base = os.path.join(_assets_dir, "masks")
+
     if output_dir is None:
         base = os.path.basename(resource_path.rstrip("/\\"))
-        stem = os.path.splitext(base)[0] if os.path.isfile(resource_path) else base
-        output_dir = os.path.join(os.path.dirname(resource_path) or ".", f"{stem}_sam2_output")
+        input_name = os.path.splitext(base)[0] if os.path.isfile(resource_path) else base
+        output_dir = os.path.join(_masks_base, input_name)
 
     output_dir = os.path.abspath(output_dir)
     os.makedirs(output_dir, exist_ok=True)
