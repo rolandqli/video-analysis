@@ -26,12 +26,11 @@ create_venv() {
 
 create_venv "video-analysis" "requirements/video-analysis.txt"
 create_venv "sam2-segmentation" "requirements/sam2-segmentation.txt"
-create_venv "groundingdino" "requirements/groundingdino.txt"
+create_venv "resources" "requirements/resources.txt"
+create_venv "orchestrator" "requirements/orchestrator.txt"
 
 echo ""
 echo "On Mac without CUDA, if SAM 2 install failed, run:"
 echo "  SAM2_BUILD_CUDA=0 .venv-sam2-segmentation/bin/pip install 'git+https://github.com/facebookresearch/sam2.git'"
 echo ""
-echo "GroundingDINO venv needs repo install and weights:"
-echo "  .venv-groundingdino/bin/pip install 'git+https://github.com/IDEA-Research/GroundingDINO.git'"
-echo "  # Then download weights into ./weights as in the GroundingDINO README"
+

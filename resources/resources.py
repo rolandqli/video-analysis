@@ -1,4 +1,4 @@
-"""Asset listing resources for MCP servers."""
+"""All MCP resources (asset listings) in one place."""
 
 import json
 import os
@@ -7,7 +7,7 @@ _ASSETS = os.path.join(os.getcwd(), "assets")
 
 
 def list_videos() -> str:
-    """List videos in assets/videos (copied by video_to_frames)."""
+    """List videos in assets/videos."""
     videos_dir = os.path.join(_ASSETS, "videos")
     if not os.path.isdir(videos_dir):
         return json.dumps({"videos": [], "path": videos_dir})

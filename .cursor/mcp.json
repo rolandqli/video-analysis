@@ -9,6 +9,16 @@
       "command": "scripts/mcp-launch.sh",
       "args": ["sam2-segmentation"],
       "cwd": ".."
+    },
+    "resources": {
+      "command": "scripts/mcp-launch.sh",
+      "args": ["resources"],
+      "cwd": ".."
+    },
+    "orchestrator": {
+      "command": "scripts/mcp-launch.sh",
+      "args": ["orchestrator"],
+      "cwd": ".."
     }
   }
 }

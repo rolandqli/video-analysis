@@ -1,0 +1,2 @@
+# MCP orchestrator server (orchestrator_server.py)
+fastmcp>=1.0.0
