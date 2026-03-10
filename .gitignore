@@ -1,11 +1,13 @@
 # Environment
 .env
 .venv/
+.venv-*/
 venv/
 env/
 
 # Python
 __pycache__/
+.pytest_cache/
 *.py[cod]
 *$py.class
 *.so

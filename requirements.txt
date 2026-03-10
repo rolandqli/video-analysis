@@ -1,5 +1,7 @@
-mcp>=1.0.0
-fastmcp>=0.1.0
-openai>=1.0.0
-python-dotenv>=1.0.0
-opencv-python>=4.8.0
+# Meta requirements - install per-service deps into separate venvs
+# Run: ./scripts/setup_venvs.sh
+#
+# Service-specific:
+#   requirements/video-analysis.txt  -> .venv-video-analysis
+#   requirements/sam2-segmentation.txt -> .venv-sam2-segmentation
+#   requirements/test.txt -> for running tests (pytest)

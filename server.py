@@ -1,6 +1,6 @@
 """MCP server for video and image analysis."""
 from dotenv import load_dotenv
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 from openai import OpenAI
 import os
 

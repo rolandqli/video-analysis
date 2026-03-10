@@ -1,9 +1,14 @@
 {
-    "mcpServers": {
-      "video-analysis": {
-        "command": "/opt/miniconda3/envs/mcp/bin/python",
-        "args": ["/Users/rolandli/Documents/interviewPrep/apple/server.py"],
-        "cwd": "/Users/rolandli/Documents/interviewPrep/apple"
-      }
+  "mcpServers": {
+    "video-analysis": {
+      "command": "scripts/mcp-launch.sh",
+      "args": ["video-analysis"],
+      "cwd": ".."
+    },
+    "sam2-segmentation": {
+      "command": "scripts/mcp-launch.sh",
+      "args": ["sam2-segmentation"],
+      "cwd": ".."
     }
   }
+}

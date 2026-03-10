@@ -1,0 +1,5 @@
+# MCP video-analysis server (server.py)
+fastmcp>=1.0.0
+openai>=1.0.0
+python-dotenv>=1.0.0
+opencv-python>=4.8.0
