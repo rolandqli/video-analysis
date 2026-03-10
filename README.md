@@ -1,11 +1,28 @@
 # MCP Video Analysis
 
-MCP (Model Context Protocol) servers for image analysis and a simple demo.
+MCP (Model Context Protocol) servers for video frame extraction and image analysis.
+
+## Project structure
+
+```
+apple/
+├── server.py           # MCP entry point, registers tools
+├── tools/
+│   ├── video.py        # video_to_frames
+│   └── image.py        # detect_objects, summarize_scene
+├── utils/
+│   └── image_utils.py  # load_image, MIME_TYPES
+└── ...
+```
 
 ## Servers
 
-### server.py — Video Analysis
+### server.py — Video & Image Analysis
 
+**Video:**
+- **`video_to_frames(video_path, output_dir?, frame_interval?, image_format?)`** — Extract frames from a video to a folder of images (OpenCV)
+
+**Image:**
 - **`detect_objects(image_path)`** — Detect and describe objects in an image using OpenAI vision
 - **`summarize_scene(scene_description)`** — Convert scene descriptions to structured metadata/tags
 

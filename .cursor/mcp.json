@@ -1,10 +1,5 @@
 {
     "mcpServers": {
-      "Demo 🚀": {
-        "command": "/opt/miniconda3/envs/mcp/bin/python",
-        "args": ["/Users/rolandli/Documents/interviewPrep/apple/simple.py"],
-        "cwd": "/Users/rolandli/Documents/interviewPrep/apple"
-      },
       "video-analysis": {
         "command": "/opt/miniconda3/envs/mcp/bin/python",
         "args": ["/Users/rolandli/Documents/interviewPrep/apple/server.py"],
