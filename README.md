@@ -130,3 +130,16 @@ cp .env.example .env
 ```
 
 Or use `scripts/mcp-launch.sh <server-name>`.
+
+## Tests
+
+```bash
+# Create test venv (optional; or use project venv with deps)
+./scripts/setup_venvs.sh   # includes .venv-test
+
+# Run tests
+.venv-test/bin/pytest   # or: python3 -m pytest tests/
+```
+
+**Unit tests:** `test_video`, `test_resources`, `test_prompts`, `test_sam`  
+**Integration tests:** `tests/integration/test_pipeline` (video → frames → segment)

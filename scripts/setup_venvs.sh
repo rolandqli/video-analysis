@@ -28,6 +28,7 @@ create_venv "video-analysis" "requirements/video-analysis.txt"
 create_venv "sam2-segmentation" "requirements/sam2-segmentation.txt"
 create_venv "resources" "requirements/resources.txt"
 create_venv "orchestrator" "requirements/orchestrator.txt"
+create_venv "test" "requirements/test.txt"
 
 echo ""
 echo "On Mac without CUDA, if SAM 2 install failed, run:"

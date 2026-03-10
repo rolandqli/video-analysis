@@ -3,8 +3,8 @@
 
 def extract_and_segment(
     video: str,
-    point: tuple[float, float] | None = None,
-    box: tuple[float, float, float, float] | None = None,
+    point: "tuple[float, float] | None" = None,
+    box: "tuple[float, float, float, float] | None" = None,
 ) -> str:
     """Instructions for extract-frames-then-SAM2-segment workflow."""
     stem = video.rsplit(".", 1)[0] if "." in video else video
