@@ -131,9 +131,13 @@ def segment_with_sam2(
         output_dir = os.path.join(_masks_base, f"{input_name}_{prompt_suffix}")
 
     output_dir = os.path.abspath(output_dir)
+    masks_dir = os.path.join(output_dir, "masks")
+    masked_images_dir = os.path.join(output_dir, "masked_images")
+    metadata_dir = os.path.join(output_dir, "metadata")
     os.makedirs(output_dir, exist_ok=True)
-    os.makedirs(os.path.join(output_dir, "masks"), exist_ok=True)
-    os.makedirs(os.path.join(output_dir, "metadata"), exist_ok=True)
+    os.makedirs(masks_dir, exist_ok=True)
+    os.makedirs(masked_images_dir, exist_ok=True)
+    os.makedirs(metadata_dir, exist_ok=True)
 
     predictor = _get_predictor()
 
@@ -213,26 +217,46 @@ def segment_with_sam2(
         for i, p in enumerate(paths):
             video_frames[i] = np.array(Image.open(p).convert("RGB"))
 
+    import cv2 as _cv2
+
+    saved_masks: list[str] = []
     saved_frames: list[str] = []
     for idx in sorted(outputs_per_frame.keys()):
         if idx not in video_frames:
             continue
         try:
             obj_ids, mask_logits = outputs_per_frame[idx]
-            fig, ax = plt.subplots(figsize=(6, 4))
-            ax.imshow(video_frames[idx])
-            for i, (oid, mlog) in enumerate(zip(obj_ids, mask_logits)):
+            # Build combined binary mask (union of all object masks)
+            combined_mask = None
+            mask_list = []
+            for oid, mlog in zip(obj_ids, mask_logits):
                 mask = (mlog > 0.0).cpu().numpy() if hasattr(mlog, "cpu") else (mlog > 0.0)
                 if mask.ndim == 3:
                     mask = mask[0]
+                mask_list.append(mask)
+                if combined_mask is None:
+                    combined_mask = mask.copy()
+                else:
+                    combined_mask = np.logical_or(combined_mask, mask)
+            if combined_mask is None:
+                combined_mask = np.zeros(video_frames[idx].shape[:2], dtype=bool)
+            # Save actual mask (0/255) to masks/
+            mask_uint8 = np.where(combined_mask, 255, 0).astype(np.uint8)
+            mask_path = os.path.join(masks_dir, f"frame_{idx:06d}.png")
+            _cv2.imwrite(mask_path, mask_uint8)
+            saved_masks.append(mask_path)
+            # Save overlay visualization to masked_images/
+            fig, ax = plt.subplots(figsize=(6, 4))
+            ax.imshow(video_frames[idx])
+            for mask in mask_list:
                 mask_rgba = np.zeros((*mask.shape, 4), dtype=np.uint8)
                 mask_rgba[mask, :] = [255, 0, 0, 100]
                 ax.imshow(mask_rgba)
             ax.set_title(f"Frame {idx}")
-            out_path = os.path.join(output_dir, "masks", f"frame_{idx:06d}.png")
-            plt.savefig(out_path, bbox_inches="tight", dpi=150)
+            masked_img_path = os.path.join(masked_images_dir, f"frame_{idx:06d}.png")
+            plt.savefig(masked_img_path, bbox_inches="tight", dpi=150)
             plt.close("all")
-            saved_frames.append(out_path)
+            saved_frames.append(masked_img_path)
         except Exception:
             plt.close("all")
 
@@ -244,7 +268,7 @@ def segment_with_sam2(
         "propagate": propagate,
         "num_frames": len(outputs_per_frame),
     }
-    meta_path = os.path.join(output_dir, "metadata", "run.json")
+    meta_path = os.path.join(metadata_dir, "run.json")
     with open(meta_path, "w") as f:
         json.dump(meta, f, indent=2)
 
@@ -252,6 +276,7 @@ def segment_with_sam2(
         "output_dir": output_dir,
         "num_frames": len(outputs_per_frame),
         "metadata_path": meta_path,
+        "saved_masks": saved_masks,
         "saved_frames": saved_frames,
         "point": prompt_desc if box is None else None,
         "box": prompt_desc if box is not None else None,

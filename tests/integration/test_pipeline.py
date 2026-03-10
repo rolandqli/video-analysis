@@ -35,28 +35,18 @@ def _make_jpeg(path: Path, size: tuple[int, int] = (50, 50)) -> None:
 
 
 def _fake_sam2(mock_predictor):
+    """Mock sam2 and torch only; use real matplotlib so savefig writes masked_images."""
     torch = MagicMock()
     torch.cuda.is_available.return_value = False
     torch.backends = MagicMock()
     torch.backends.mps = MagicMock()
     torch.backends.mps.is_available.return_value = False
-    mpl = MagicMock()
-    mpl.use = MagicMock()
-    plt = MagicMock()
-    plt.savefig = MagicMock()
-    plt.close = MagicMock()
-    fig, ax = MagicMock(), MagicMock()
-    ax.imshow = MagicMock()
-    ax.set_title = MagicMock()
-    plt.subplots.return_value = (fig, ax)
     predictor_cls = MagicMock()
     predictor_cls.from_pretrained.return_value = mock_predictor
     return {
         "torch": torch,
         "sam2": MagicMock(),
         "sam2.sam2_video_predictor": MagicMock(SAM2VideoPredictor=predictor_cls),
-        "matplotlib": mpl,
-        "matplotlib.pyplot": plt,
     }
 
 
@@ -97,12 +87,20 @@ def test_full_pipeline_video_frames_segment(tmp_path, monkeypatch):
     mock_predictor = MagicMock()
     mock_predictor.init_state.return_value = MagicMock()
     fake_mask = MagicMock()
-    fake_mask.cpu.return_value.numpy.return_value = np.zeros((48, 64), dtype=bool)
+    _arr = np.zeros((48, 64), dtype=bool)
+    _arr[10:40, 10:50] = True  # non-empty mask
+    gt_result = MagicMock()
+    gt_result.cpu.return_value.numpy.return_value = _arr
+    fake_mask.__gt__ = lambda s, o: gt_result
     mock_predictor.add_new_points_or_box.return_value = (0, [1], [fake_mask])
     # propagate_in_video yields (frame_idx, obj_ids, mask_logits) for each extra frame
     mock_predictor.propagate_in_video.return_value = iter([
         (1, [1], [fake_mask]),
     ])
+
+    # Reset cached predictor so we get our mock (previous tests may have set it)
+    import tools.sam as sam_mod
+    sam_mod._PREDICTOR = None
 
     with patch.dict(sys.modules, _fake_sam2(mock_predictor)):
         seg_result = segment_with_sam2(
@@ -113,6 +111,15 @@ def test_full_pipeline_video_frames_segment(tmp_path, monkeypatch):
 
     assert seg_result["num_frames"] == 2
     assert "saved_frames" in seg_result
+    assert "saved_masks" in seg_result
+    assert len(seg_result["saved_masks"]) == 2
+    assert len(seg_result["saved_frames"]) == 2
+    out = Path(seg_result["output_dir"])
+    assert (out / "masks").exists()
+    assert (out / "masked_images").exists()
+    assert len(list((out / "masks").glob("frame_*.png"))) == 2
+    assert len(list((out / "masked_images").glob("frame_*.png"))) == 2
+    assert all("masked_images" in p for p in seg_result["saved_frames"])
 
     # Step 3: list_masks shows the new output (resources use cwd/assets)
     monkeypatch.setattr("resources.resources._ASSETS", str(assets))

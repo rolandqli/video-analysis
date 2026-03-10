@@ -47,7 +47,7 @@ video-analysis/
 
 Uses [Meta's SAM 2](https://github.com/facebookresearch/sam2) with point prompts. Model is loaded once at startup.
 
-- **`segment_with_sam2(resource_path, point?, output_dir?, frame_index?, propagate?)`** — Segment objects in a video or folder of images. Point normalized 0–1 (default center 0.5, 0.5). Saves masks to `assets/masks/<input_name>/`.
+- **`segment_with_sam2(resource_path, point?, box?, output_dir?, frame_index?, propagate?)`** — Segment objects in a video or folder of images. Point or box normalized 0–1. Saves to `assets/masks/<input_name>_<prompt>/`: `masks/` (raw binary masks) and `masked_images/` (overlay visualizations).
 
 **Prerequisites:** Python 3.10+, PyTorch. On Mac without CUDA: `SAM2_BUILD_CUDA=0 pip install 'git+https://github.com/facebookresearch/sam2.git'`
 
