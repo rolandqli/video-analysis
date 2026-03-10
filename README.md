@@ -11,7 +11,7 @@ video-analysis/
 │   ├── sam2_segmentation.py  # SAM 2 segmentation
 │   ├── resources.py          # Asset listing resources & tools
 │   ├── orchestrator.py       # Workflow prompts
-│   └── grounding.py          # Grounding DINO (optional)
+│   └── grounding.py          # Grounding DINO (WIP)
 ├── tools/                    # Tool implementations
 │   ├── video.py              # video_to_frames
 │   ├── image.py              # detect_objects, summarize_scene
@@ -62,6 +62,12 @@ Uses [Meta's SAM 2](https://github.com/facebookresearch/sam2) with point prompts
 
 **Prompts:**
 - **`extract_and_segment(video, point_x?, point_y?)`** — Returns instructions to: discover video via `asset://videos`, run `video_to_frames`, then `segment_with_sam2` with the given point. Use this prompt to drive the full pipeline.
+
+### groundingdino — Grounding DINO *(work in progress)*
+
+[Grounding DINO](https://github.com/IDEA-Research/GroundingDINO) for open-set object detection with text prompts. Server exists (`servers/grounding.py`) but is not wired into `mcp-launch.sh` or `.cursor/mcp.json` yet.
+
+- **`groundingdino_detect(image_path, text_prompt, box_threshold?, text_threshold?)`** — Detect objects in an image by text prompt (e.g. `"person . dog . chair ."`).
 
 ## Setup
 
