@@ -1,4 +1,5 @@
 # MCP video-analysis server (server.py)
+# Requires: Python 3.10+
 fastmcp>=1.0.0
 openai>=1.0.0
 python-dotenv>=1.0.0

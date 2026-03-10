@@ -3,7 +3,6 @@
 from fastmcp import FastMCP
 
 from orchestrator.prompts import extract_and_segment
-
 mcp = FastMCP("orchestrator")
 
 # Register prompts (MCP protocol prompts/get)
@@ -45,3 +44,6 @@ def get_prompt(
         bx = tuple(box) if box and len(box) == 4 else None
         return fn(video=video, point=pt, box=bx)
     return fn()
+
+if __name__ == "__main__":
+    mcp.run()

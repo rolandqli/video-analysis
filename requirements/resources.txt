@@ -1,2 +1,3 @@
 # MCP resources server (resources_server.py)
+# Requires: Python 3.10+
 fastmcp>=1.0.0

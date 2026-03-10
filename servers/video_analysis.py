@@ -11,11 +11,8 @@ from tools.video import video_to_frames
 load_dotenv()
 
 mcp = FastMCP("video-analysis")
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 mcp.tool()(video_to_frames)
-mcp.tool()(create_detect_objects(client))
-mcp.tool()(create_summarize_scene(client))
 
 if __name__ == "__main__":
     mcp.run()
