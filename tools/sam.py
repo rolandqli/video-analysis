@@ -48,6 +48,27 @@ def _get_device() -> str:
     return "cpu"
 
 
+_PREDICTOR = None
+
+
+def _get_predictor():
+    """Load SAM 2 predictor once and reuse."""
+    global _PREDICTOR
+    if _PREDICTOR is None:
+        try:
+            from sam2.sam2_video_predictor import SAM2VideoPredictor
+        except ImportError as e:
+            raise ImportError(
+                "SAM 2 is not installed. Install with:\n"
+                "  pip install 'git+https://github.com/facebookresearch/sam2.git'\n"
+                "Checkpoints download automatically from Hugging Face (no access request needed)."
+            ) from e
+        _PREDICTOR = SAM2VideoPredictor.from_pretrained(
+            "facebook/sam2-hiera-tiny", device=_get_device()
+        )
+    return _PREDICTOR
+
+
 def segment_with_sam2(
     resource_path: str,
     point: tuple[float, float] | None = None,
@@ -74,17 +95,9 @@ def segment_with_sam2(
     Returns:
         Dict with output_dir, num_frames, saved file paths.
     """
-    try:
-        from sam2.sam2_video_predictor import SAM2VideoPredictor
-        import matplotlib
-        matplotlib.use("Agg")
-        import matplotlib.pyplot as plt
-    except ImportError as e:
-        raise ImportError(
-            "SAM 2 is not installed. Install with:\n"
-            "  pip install 'git+https://github.com/facebookresearch/sam2.git'\n"
-            "Checkpoints download automatically from Hugging Face (no access request needed)."
-        ) from e
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
 
     resource_path = os.path.abspath(resource_path)
     if not os.path.exists(resource_path):
@@ -107,8 +120,7 @@ def segment_with_sam2(
     px = max(0.0, min(1.0, px))
     py = max(0.0, min(1.0, py))
 
-    device = _get_device()
-    predictor = SAM2VideoPredictor.from_pretrained("facebook/sam2-hiera-tiny", device=device)
+    predictor = _get_predictor()
 
     # SAM 2 requires frame filenames with integer stems (e.g. 000000.jpg); create temp dir if needed
     if os.path.isdir(resource_path):
