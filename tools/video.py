@@ -41,8 +41,9 @@ def video_to_frames(
     os.makedirs(videos_dir, exist_ok=True)
     os.makedirs(frames_base, exist_ok=True)
 
-    video_copy_path = os.path.join(videos_dir, os.path.basename(video_path))
-    shutil.copy2(video_path, video_copy_path)
+    video_copy_path = os.path.abspath(os.path.join(videos_dir, os.path.basename(video_path)))
+    if video_path != video_copy_path:
+        shutil.copy2(video_path, video_copy_path)
 
     if output_dir is None:
         output_dir = os.path.join(frames_base, stem)
