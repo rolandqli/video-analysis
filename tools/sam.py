@@ -72,6 +72,7 @@ def _get_predictor():
 def segment_with_sam2(
     resource_path: str,
     point: tuple[float, float] | None = None,
+    box: tuple[float, float, float, float] | None = None,
     output_dir: str | None = None,
     frame_index: int = 0,
     propagate: bool = True,
@@ -79,16 +80,18 @@ def segment_with_sam2(
     """
     Run SAM 2 segmentation on a video file or folder of images.
 
-    Uses Meta's Segment Anything Model 2 with point prompts (no Hugging Face access required).
+    Uses Meta's Segment Anything Model 2 with point and/or box prompts (no Hugging Face access).
     Supports both MP4 video files and folders of JPEG frames.
-    SAM 2 uses point/box prompts (not text); point is normalized (0-1), default center (0.5, 0.5).
+    Provide point and/or box; both are normalized 0-1. If neither given, uses center (0.5, 0.5).
+    Box format: (x1, y1, x2, y2) top-left to bottom-right.
 
     Prerequisites: Python 3.10+, PyTorch 2.5+, CUDA. Install: pip install 'git+https://github.com/facebookresearch/sam2.git'
 
     Args:
         resource_path: Path to an MP4 video file or a folder of JPEG images.
-        point: (x, y) point prompt normalized 0-1. Default (0.5, 0.5) = frame center.
-        output_dir: Directory to save outputs. Defaults to <resource_name>_sam2_output.
+        point: (x, y) point prompt normalized 0-1. Default (0.5, 0.5) if no box.
+        box: (x1, y1, x2, y2) bounding box normalized 0-1. Takes precedence over point when set.
+        output_dir: Directory to save outputs. Defaults to assets/masks/<input_name>.
         frame_index: Frame to add the prompt on.
         propagate: If True, propagate segmentation to all frames.
 
@@ -106,19 +109,31 @@ def segment_with_sam2(
     _assets_dir = os.path.join(os.getcwd(), "assets")
     _masks_base = os.path.join(_assets_dir, "masks")
 
+    # Compute prompt for output folder name
+    if box is not None:
+        x1, y1, x2, y2 = (
+            max(0.0, min(1.0, box[0])),
+            max(0.0, min(1.0, box[1])),
+            max(0.0, min(1.0, box[2])),
+            max(0.0, min(1.0, box[3])),
+        )
+        prompt_desc = [x1, y1, x2, y2]
+        prompt_suffix = f"box_{x1:.2f}_{y1:.2f}_{x2:.2f}_{y2:.2f}"
+    else:
+        px, py = point or (0.5, 0.5)
+        px, py = max(0.0, min(1.0, px)), max(0.0, min(1.0, py))
+        prompt_desc = [px, py]
+        prompt_suffix = f"point_{px:.2f}_{py:.2f}"
+
     if output_dir is None:
         base = os.path.basename(resource_path.rstrip("/\\"))
         input_name = os.path.splitext(base)[0] if os.path.isfile(resource_path) else base
-        output_dir = os.path.join(_masks_base, input_name)
+        output_dir = os.path.join(_masks_base, f"{input_name}_{prompt_suffix}")
 
     output_dir = os.path.abspath(output_dir)
     os.makedirs(output_dir, exist_ok=True)
     os.makedirs(os.path.join(output_dir, "masks"), exist_ok=True)
     os.makedirs(os.path.join(output_dir, "metadata"), exist_ok=True)
-
-    px, py = point or (0.5, 0.5)
-    px = max(0.0, min(1.0, px))
-    py = max(0.0, min(1.0, py))
 
     predictor = _get_predictor()
 
@@ -149,17 +164,25 @@ def segment_with_sam2(
         img = np.array(Image.open(paths[0]))
         h, w = img.shape[:2]
 
-    pt_x = int(px * w)
-    pt_y = int(py * h)
-    points = np.array([[pt_x, pt_y]], dtype=np.float32)
-    labels = np.array([1], dtype=np.int32)
+    if box is not None:
+        box_px = np.array(
+            [prompt_desc[0] * w, prompt_desc[1] * h, prompt_desc[2] * w, prompt_desc[3] * h],
+            dtype=np.float32,
+        )
+        add_kwargs: dict[str, Any] = {"box": box_px}
+    else:
+        px, py = prompt_desc[0], prompt_desc[1]
+        pt_x = int(px * w)
+        pt_y = int(py * h)
+        points = np.array([[pt_x, pt_y]], dtype=np.float32)
+        labels = np.array([1], dtype=np.int32)
+        add_kwargs = {"points": points, "labels": labels}
 
     _, out_obj_ids, out_mask_logits = predictor.add_new_points_or_box(
         inference_state=inference_state,
         frame_idx=frame_index,
         obj_id=1,
-        points=points,
-        labels=labels,
+        **add_kwargs,
     )
 
     outputs_per_frame: dict[int, Any] = {frame_index: (out_obj_ids, out_mask_logits)}
@@ -215,7 +238,8 @@ def segment_with_sam2(
 
     meta = {
         "resource_path": resource_path,
-        "point": [px, py],
+        "point": prompt_desc if box is None else None,
+        "box": prompt_desc if box is not None else None,
         "frame_index": frame_index,
         "propagate": propagate,
         "num_frames": len(outputs_per_frame),
@@ -229,4 +253,6 @@ def segment_with_sam2(
         "num_frames": len(outputs_per_frame),
         "metadata_path": meta_path,
         "saved_frames": saved_frames,
+        "point": prompt_desc if box is None else None,
+        "box": prompt_desc if box is not None else None,
     }
