@@ -72,18 +72,21 @@ Uses [Meta's SAM 2](https://github.com/facebookresearch/sam2) with point prompts
 ## Setup
 
 ```bash
-# Create per-service venvs (Python 3.10+ required)
+# Install uv (https://docs.astral.sh/uv/)
+brew install uv
+
+# Create per-service venvs with uv (Python 3.10+)
 ./scripts/setup_venvs.sh
 
 # SAM 2 (Mac without CUDA):
-SAM2_BUILD_CUDA=0 .venv-sam2-segmentation/bin/pip install 'git+https://github.com/facebookresearch/sam2.git'
+SAM2_BUILD_CUDA=0 uv pip install --python .venv-sam2-segmentation/bin/python 'git+https://github.com/facebookresearch/sam2.git'
 
 # video-analysis (OpenAI):
 cp .env.example .env
 # Add OPENAI_API_KEY=your-key
 ```
 
-**Venvs:**
+**Venvs** (created with uv):
 - `.venv-video-analysis` — video/image tools
 - `.venv-sam2-segmentation` — SAM 2
 - `.venv-resources` — asset listings
@@ -134,11 +137,11 @@ Or use `scripts/mcp-launch.sh <server-name>`.
 ## Tests
 
 ```bash
-# Create test venv (optional; or use project venv with deps)
-./scripts/setup_venvs.sh   # includes .venv-test
+# Create venvs (includes .venv-test)
+./scripts/setup_venvs.sh
 
 # Run tests
-.venv-test/bin/pytest   # or: python3 -m pytest tests/
+.venv-test/bin/pytest
 ```
 
 **Unit tests:** `test_video`, `test_resources`, `test_prompts`, `test_sam`  
