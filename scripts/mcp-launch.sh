@@ -2,7 +2,7 @@
 # Launch an MCP server with paths derived from this script's location.
 # Uses python -m so project root is on sys.path (no sys.path hacks).
 # Usage: mcp-launch.sh <server-name>
-# Server names: video-analysis | sam2-segmentation | resources | orchestrator
+# Server names: video-analysis | sam2-segmentation | groundingdino | resources | orchestrator
 set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -14,6 +14,9 @@ case "$SERVER" in
   sam2-segmentation)
     cd "$PROJECT_ROOT" && exec "$PROJECT_ROOT/.venv-sam2-segmentation/bin/python" -m servers.sam2_segmentation
     ;;
+  groundingdino)
+    cd "$PROJECT_ROOT" && exec "$PROJECT_ROOT/.venv-groundingdino/bin/python" -m servers.grounding
+    ;;
   resources)
     cd "$PROJECT_ROOT" && exec "$PROJECT_ROOT/.venv-resources/bin/python" -m servers.resources
     ;;
@@ -21,7 +24,7 @@ case "$SERVER" in
     cd "$PROJECT_ROOT" && exec "$PROJECT_ROOT/.venv-orchestrator/bin/python" -m servers.orchestrator
     ;;
   *)
-    echo "Unknown server: $SERVER (use: video-analysis | sam2-segmentation | resources | orchestrator)" >&2
+    echo "Unknown server: $SERVER (use: video-analysis | sam2-segmentation | groundingdino | resources | orchestrator)" >&2
     exit 1
     ;;
 esac

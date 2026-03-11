@@ -1,10 +1,10 @@
 # MCP groundingdino server (grounding_server.py)
 # Requires: Python 3.10+
+# Install order: base deps first, then GroundingDINO with --no-build-isolation
+# (GroundingDINO setup.py needs torch at build time; uv's isolated build has no pip)
 fastmcp>=1.0.0
 torch>=2.1.0
 torchvision>=0.16.0
 opencv-python>=4.8.0
 numpy>=1.24.0
-# GroundingDINO - install from GitHub
-#   pip install 'git+https://github.com/IDEA-Research/GroundingDINO.git'
-
+setuptools

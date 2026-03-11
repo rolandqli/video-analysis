@@ -19,6 +19,11 @@
       "command": "scripts/mcp-launch.sh",
       "args": ["orchestrator"],
       "cwd": ".."
+    },
+    "groundingdino": {
+      "command": "scripts/mcp-launch.sh",
+      "args": ["groundingdino"],
+      "cwd": ".."
     }
   }
 }

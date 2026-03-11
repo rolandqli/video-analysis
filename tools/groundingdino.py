@@ -8,8 +8,9 @@ https://github.com/IDEA-Research/GroundingDINO
 for open-set object detection with text prompts.
 """
 
+import json
 import os
-from typing import Any, List, Tuple
+from typing import Any, List
 
 import numpy as np
 
@@ -70,7 +71,7 @@ def detect_with_groundingdino(
     boxes_list: List[List[float]] = boxes.tolist() if isinstance(boxes, np.ndarray) else boxes  # type: ignore[arg-type]
     logits_list: List[float] = logits.tolist() if isinstance(logits, np.ndarray) else logits  # type: ignore[arg-type]
 
-    return {
+    result = {
         "image_path": os.path.abspath(image_path),
         "image_size": {
             "height": int(image_source.shape[0]),
@@ -83,4 +84,14 @@ def detect_with_groundingdino(
         "logits": logits_list,
         "phrases": phrases,
     }
+
+    # Store metadata JSON alongside the source image
+    image_dir = os.path.dirname(os.path.abspath(image_path))
+    stem, _ = os.path.splitext(os.path.basename(image_path))
+    metadata_path = os.path.join(image_dir, f"{stem}.groundingdino.json")
+    with open(metadata_path, "w") as f:
+        json.dump(result, f, indent=2)
+    result["metadata_path"] = metadata_path
+
+    return result
 

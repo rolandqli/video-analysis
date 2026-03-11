@@ -23,6 +23,10 @@ create_venv() {
 
 create_venv "video-analysis" "requirements/video-analysis.txt"
 create_venv "sam2-segmentation" "requirements/sam2-segmentation.txt"
+create_venv "groundingdino" "requirements/groundingdino.txt"
+# GroundingDINO setup.py needs torch at build time; uv's isolated build has no pip
+echo "  Installing GroundingDINO (--no-build-isolation)..."
+uv pip install --no-build-isolation --python .venv-groundingdino/bin/python 'git+https://github.com/IDEA-Research/GroundingDINO.git'
 create_venv "resources" "requirements/resources.txt"
 create_venv "orchestrator" "requirements/orchestrator.txt"
 create_venv "test" "requirements/test.txt"
